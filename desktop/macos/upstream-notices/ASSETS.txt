@@ -1,0 +1,15 @@
+BabelDOC 0.7.1 native PDF processing
+https://github.com/funstory-ai/BabelDOC/tree/v0.7.1
+
+Document layout model
+DocLayout-YOLO DocStructBench, 1024-pixel export
+https://github.com/opendatalab/DocLayout-YOLO
+https://github.com/funstory-ai/BabelDOC-Assets
+
+Fonts
+Original font copyright and license records are embedded in the TrueType files.
+https://github.com/funstory-ai/BabelDOC-Assets#license
+
+PDF.js
+https://github.com/mozilla/pdf.js
+See Resources/web/pdfjs/LICENSE.

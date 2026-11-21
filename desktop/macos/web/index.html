@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>PDF Translator</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="top-tabs" role="tablist" aria-label="Main views">
+        <button id="workspace-tab" role="tab" aria-controls="yepage-main" aria-selected="true">Workspace</button>
+        <button id="settings-tab" role="tab" aria-controls="yepage-settings" aria-selected="false" tabindex="-1">Settings</button>
+      </div>
+    </header>
+    <section class="workspace" id="yepage-main" role="tabpanel" aria-labelledby="workspace-tab">
+      <div class="workspace-view-tabs" id="workspace-view-tabs" role="tablist" aria-label="Workspace view" hidden>
+        <button type="button" id="workspace-config-tab" role="tab" aria-controls="workspace-config-panel" aria-selected="true">Setup</button>
+        <button type="button" id="workspace-preview-tab" role="tab" aria-controls="workspace-preview" aria-selected="false" tabindex="-1">Preview</button>
+      </div>
+      <input id="file-input" class="sr-only" type="file" accept=".pdf,application/pdf" multiple tabindex="-1">
+      <section class="controls" id="workspace-config-panel" aria-label="Translation setup">
+        <div class="controls-body">
+          <section class="file-controls" aria-labelledby="files-heading">
+            <div class="section-heading">
+              <h2 id="files-heading">Files <span id="file-count" class="file-count" hidden></span></h2>
+              <fieldset class="segments" id="source-toggle">
+                <legend class="sr-only">File source</legend>
+                <label><input type="radio" name="source" value="file" checked><span>Local</span></label>
+                <label><input type="radio" name="source" value="link"><span>Link</span></label>
+              </fieldset>
+            </div>
+            <div id="workspace-upload" hidden>
+              <button type="button" class="pick-files" id="pick-files" disabled><span class="plus-icon" aria-hidden="true"></span>Add PDF</button>
+            </div>
+            <form class="link-row" id="link-form" hidden>
+              <input id="workspace-link" type="url" inputmode="url" autocomplete="off" placeholder="https://…" aria-label="PDF link" required>
+              <button class="primary" id="workspace-link-import" disabled>Import</button>
+            </form>
+            <ul class="upload-list" id="upload-list" aria-label="Added PDFs" hidden></ul>
+          </section>
+          <section class="translation-controls" aria-labelledby="translation-heading">
+            <h2 id="translation-heading">Translation</h2>
+            <div class="language-row">
+              <div class="field"><span id="workspace-language-from-label">From</span><div class="select-wrap"><select id="workspace-language-from" aria-labelledby="workspace-language-from-label" data-setting="from"></select></div></div>
+              <button class="secondary swap" id="workspace-swap" type="button" aria-label="Swap languages" title="Swap languages">⇄</button>
+              <div class="field"><span id="workspace-language-to-label">To</span><div class="select-wrap"><select id="workspace-language-to" aria-labelledby="workspace-language-to-label" data-setting="to"></select></div></div>
+            </div>
+            <div class="option-row">
+              <label class="field"><span>Pages</span><input id="workspace-page-input" type="text" placeholder="All" autocomplete="off" spellcheck="false" data-setting="pages"></label>
+              <div class="field"><span id="workspace-output-format-label">Output</span><div class="select-wrap"><select id="workspace-output-format" aria-labelledby="workspace-output-format-label" data-setting="format">
+                <option value="both">Both PDFs</option><option value="mono">Translated PDF</option><option value="dual">Bilingual PDF</option>
+              </select></div></div>
+            </div>
+          </section>
+          <section class="service-summary" aria-labelledby="service-heading">
+            <h2 id="service-heading">Translation service</h2>
+            <button class="service-shortcut" id="active-service" type="button">
+              <strong id="workspace-active-service">SiliconFlow Free</strong><span class="chevron right" aria-hidden="true"></span>
+            </button>
+          </section>
+        </div>
+      </section>
+      <section class="preview-pane" id="workspace-preview" aria-label="PDF preview">
+        <div class="preview-toolbar">
+          <div class="preview-title">
+            <h2 id="preview-heading">PDF preview</h2>
+            <span id="preview-filename" class="preview-filename" hidden></span>
+            <div class="select-wrap document-select" id="document-select" hidden>
+              <span id="workspace-files-label" class="sr-only">Preview file</span>
+              <select id="workspace-files" aria-labelledby="workspace-files-label"></select>
+            </div>
+          </div>
+          <div class="preview-tools">
+            <fieldset class="segments versions" id="workspace-preview-version" hidden>
+              <legend class="sr-only">Preview version</legend>
+              <label><input type="radio" name="version" value="original" checked><span>Original</span></label>
+              <label><input type="radio" name="version" value="mono"><span>Translation</span></label>
+              <label><input type="radio" name="version" value="dual"><span>Bilingual</span></label>
+            </fieldset>
+            <div class="download-control" id="download-control" hidden>
+              <button class="secondary download-button" id="workspace-download-button" aria-controls="workspace-downloads" aria-expanded="false">Download<span class="chevron down" aria-hidden="true"></span></button>
+              <div class="download-menu" id="workspace-downloads" hidden></div>
+            </div>
+          </div>
+        </div>
+        <div class="document-preview" id="document-preview" aria-label="PDF preview">
+          <button class="empty-preview" id="workspace-preview-empty" type="button" disabled>
+            <span class="file-icon" aria-hidden="true"></span>
+            <span class="empty-action" id="preview-empty-label">Choose PDF</span>
+            <span class="empty-hint" id="preview-drop-hint">or drop it here</span>
+          </button>
+          <div class="canvas-wrap" id="canvas-wrap" role="group" aria-label="Page preview" tabindex="0" hidden>
+            <canvas id="pdf-canvas" aria-label="PDF page preview"></canvas>
+          </div>
+          <p class="preview-message" id="preview-message" role="status" hidden></p>
+        </div>
+        <div class="preview-navigation" id="preview-navigation" hidden>
+          <button id="preview-prev" aria-label="Previous page" title="Previous page" type="button"><span class="chevron left" aria-hidden="true"></span></button>
+          <span class="page-indicator">
+            <input id="preview-page-index" aria-label="Current page" autocomplete="off" inputmode="numeric" size="3">
+            <span aria-hidden="true">/</span><span id="preview-page-total" aria-label="Page count">1</span>
+          </span>
+          <button id="preview-next" aria-label="Next page" title="Next page" type="button"><span class="chevron right" aria-hidden="true"></span></button>
+        </div>
+      </section>
+      <div class="action-dock">
+        <p class="status sr-only" id="workspace-job-status" role="status"></p>
+        <div class="progress-row">
+          <progress id="workspace-progress" aria-label="Translation progress" max="100" hidden></progress>
+          <span id="workspace-progress-value" class="progress-value" aria-hidden="true" hidden></span>
+        </div>
+        <div class="actions">
+          <button class="primary" id="workspace-translate" aria-describedby="workspace-job-status" disabled>Add a PDF</button>
+          <button class="secondary" id="workspace-cancel" hidden>Cancel</button>
+          <button class="secondary" id="workspace-retry" hidden>Retry</button>
+        </div>
+      </div>
+    </section>
+    <section id="yepage-settings" class="settings" role="tabpanel" aria-labelledby="settings-tab" hidden>
+      <div class="settings-heading">
+        <div class="active-label"><span>Active</span><strong id="settings-active-service">SiliconFlow Free</strong></div>
+        <span class="status" id="settings-status" role="status"></span>
+        <button class="secondary" id="settings-save">Save</button>
+      </div>
+      <div class="settings-layout">
+        <div class="settings-categories" role="tablist" aria-label="Settings categories" aria-orientation="vertical">
+          <button id="settings-services-tab" role="tab" aria-controls="settings-services" aria-selected="true">Services</button>
+          <button id="settings-output-tab" role="tab" aria-controls="settings-output" aria-selected="false" tabindex="-1">Output</button>
+          <button id="settings-terms-tab" role="tab" aria-controls="settings-terms" aria-selected="false" tabindex="-1">Glossary</button>
+          <button id="settings-advanced-tab" role="tab" aria-controls="settings-advanced" aria-selected="false" tabindex="-1">Advanced</button>
+        </div>
+        <div class="settings-content">
+          <section id="settings-services" class="service-grid" role="tabpanel" aria-labelledby="settings-services-tab">
+            <div class="settings-group builtin-service">
+              <h2>Provider</h2>
+              <div class="field"><span id="settings-provider-label">Translation service</span><div class="select-wrap"><select id="settings-provider" aria-labelledby="settings-provider-label">
+                <option value="SiliconFlowFree">SiliconFlow Free</option>
+                <optgroup label="Model presets" id="settings-model-presets"></optgroup>
+                <option value="custom">Custom service</option>
+              </select></div></div>
+              <label class="check-field"><input type="checkbox" data-setting="json_mode">JSON mode</label>
+              <p class="status">Text is sent to the selected service.</p>
+            </div>
+            <form class="settings-group profile-form" id="profile-form" aria-labelledby="settings-profile-heading">
+              <h2 id="settings-profile-heading">Custom service</h2>
+              <div class="profile-list" data-custom-profile>
+                <div class="field"><span id="settings-profile-list-label">Saved profiles</span><div class="select-wrap"><select id="settings-profile-list" aria-labelledby="settings-profile-list-label"><option value="">No saved profiles</option></select></div></div>
+                <button class="secondary danger" type="button" id="settings-profile-delete" disabled>Delete</button>
+              </div>
+              <div class="option-row" data-custom-profile>
+                <label class="field"><span>Name</span><input id="settings-profile-name" type="text" autocomplete="off" maxlength="80"></label>
+                <label class="field"><span>Model ID</span><input id="settings-profile-model" type="text" autocapitalize="none" autocomplete="off" maxlength="200"></label>
+              </div>
+              <label class="field" data-custom-profile><span>API URL</span><input id="settings-profile-url" type="url" inputmode="url" placeholder="https://api.example.com/v1" autocomplete="off" maxlength="2048"></label>
+              <label class="field"><span>API key</span><span class="password-wrap">
+                <input id="settings-profile-key" type="password" autocomplete="off" spellcheck="false">
+                <button class="password-toggle" id="profile-key-toggle" type="button" aria-label="Show API key" aria-pressed="false"><span aria-hidden="true"></span></button>
+              </span></label>
+              <div class="profile-actions">
+                <button class="secondary" type="button" id="settings-profile-test">Test connection</button>
+                <button class="secondary" type="button" id="settings-profile-save" data-custom-profile>Save profile</button>
+                <button class="primary" type="submit" id="settings-profile-apply">Apply</button>
+              </div>
+              <p id="settings-profile-status" class="status" role="status"></p>
+            </form>
+          </section>
+          <section class="settings-group" id="settings-output" role="tabpanel" aria-labelledby="settings-output-tab" hidden>
+            <div class="option-row">
+              <label class="field"><span>Pages</span><input id="settings-page-input" type="text" placeholder="All" autocomplete="off" spellcheck="false" data-setting="pages"></label>
+              <div class="field"><span id="settings-output-format-label">Output</span><div class="select-wrap"><select id="settings-output-format" aria-labelledby="settings-output-format-label" data-setting="format">
+                <option value="both">Both PDFs</option><option value="mono">Translated PDF</option><option value="dual">Bilingual PDF</option>
+              </select></div></div>
+            </div>
+            <label class="check-field"><input type="checkbox" data-setting="translated_only">Export selected pages only</label>
+            <label class="check-field"><input type="checkbox" data-setting="translated_first">Translation first in bilingual PDF</label>
+            <label class="check-field"><input type="checkbox" data-setting="alternate">Alternate pages in bilingual PDF</label>
+          </section>
+          <section class="settings-group" id="settings-terms" role="tabpanel" aria-labelledby="settings-terms-tab" hidden>
+            <label class="check-field"><input type="checkbox" data-setting="glossary">Save glossary</label>
+          </section>
+          <section class="settings-group" id="settings-advanced" role="tabpanel" aria-labelledby="settings-advanced-tab" hidden>
+            <div class="option-row">
+              <label class="field"><span>Minimum text length</span><input type="number" min="0" step="1" data-setting="min_text_length"></label>
+              <label class="field"><span>Translation font</span><input type="text" placeholder="Auto" data-setting="font_family"></label>
+            </div>
+            <label class="field"><span>System prompt</span><textarea rows="4" data-setting="prompt"></textarea></label>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

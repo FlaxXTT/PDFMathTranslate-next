@@ -1,0 +1,40 @@
+[package]
+name = "hermeneuein"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.89"
+publish = false
+
+[dependencies]
+libc = "0.2"
+reqwest = { version = "0.12.28", default-features = false, features = ["native-tls", "json", "gzip", "brotli", "deflate"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tempfile = "3"
+tokio = { version = "1", features = ["rt-multi-thread", "net", "time", "fs", "io-util", "sync"] }
+zip = { version = "4", default-features = false, features = ["deflate"] }
+
+
+axum = "0.8"
+futures-util = "0.3"
+http-body-util = "0.1"
+percent-encoding = "2"
+tower = { version = "0.5", features = ["util"] }
+tower-http = { version = "0.6", features = ["fs"] }
+uuid = { version = "1", features = ["v4"] }
+toml = "0.9"
+ort = { version = "=2.0.0-rc.12", default-features = false, features = ["load-dynamic", "api-24"] }
+lopdf = { version = "=0.45.0", default-features = false, features = ["rayon"] }
+subsetter = { version = "=0.2.6", default-features = false }
+babeldoc-parser-core = { path = "vendor/babeldoc/native/parser_core" }
+babeldoc-p2-stages = { path = "vendor/babeldoc/native/p2_stages" }
+babeldoc-font-core = { path = "vendor/babeldoc/native/font_core" }
+babeldoc-ir-core = { path = "vendor/babeldoc/native/ir_core" }
+babeldoc-writer-core = { path = "vendor/babeldoc/native/writer_core" }
+
+[patch.crates-io]
+lopdf = { path = "vendor/babeldoc/native/vendor/lopdf" }
+
+[profile.release]
+lto = "thin"
+strip = true
